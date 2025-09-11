@@ -320,8 +320,14 @@ def make_VVM_UUID_hash(platform_key):
             #outputs row:
             #XXXXXXX-XXXX...
             # but splitlines() produces a whole lot of empty strings.
-            muuid = [line for line in muuid.splitlines() if line][-1].rstrip()
-            log.debug("result of subprocess call to get win MUUID: %r" % muuid)
+            muuid = [line for line in muuid.splitlines() if line]
+            if len(muuid) > 0:
+                muuid = muuid[-1].rstrip()
+                log.debug("result of subprocess call to get win MUUID: %r" % muuid)
+            else:
+                muuid = None
+                log.debug("pshell returned empty string when trying to get MUUID")
+
             
     if muuid is None:
         #fake it
