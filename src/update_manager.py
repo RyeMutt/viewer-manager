@@ -270,12 +270,31 @@ def make_VVM_UUID_hash(platform_key):
     #for env without stdin, such as pythonw and pyinstaller, provide a legit empty handle, not the broken
     #thing we get from the env.
     if (platform_key == 'lnx'):
-        hostid_cmd=['/usr/bin/hostid']
-        muuid = subprocess.check_output(hostid_cmd,
-                                        **subprocess_args(include_stdout=False,
-                                                          log_stream=SL_Logging.stream_from_process(hostid_cmd)
-                                                          )).rstrip()
-        log.debug("result of subprocess call to get linux MUUID: %r" % muuid)
+        # Try to derive MUUID from /etc/machine-id first, since it is guarenteed to be unique
+        if os.path.exists("/etc/machine-id"):
+            try:
+                with open("/etc/machine-id", "r") as f:
+                    machine_id = f.read().rstrip()
+                    if len(machine_id) == 32:
+                        try:
+                            # Verify that machine_id is valid
+                            muuid = bytes.fromhex(machine_id).hex()
+                            log.debug("Using MUUID from hostid: %r" % muuid)
+                        except ValueError:
+                            log.debug("/etc/machine-id is malformed! Can't derive MUUID from it!")
+            except UnicodeDecodeError:
+                log.debug("/etc/machine-id is corrupted! Can't derive MUUID from it!")
+        else:
+            log.debug("/etc/machine-id doesn't exist?")
+        
+        # If /etc/machine-id failed, try to at least get something from hostid
+        if muuid == None:
+            hostid_cmd=['/usr/bin/hostid']
+            muuid = subprocess.check_output(hostid_cmd,
+                                            **subprocess_args(include_stdout=False,
+                                                            log_stream=SL_Logging.stream_from_process(hostid_cmd)
+                                                            )).rstrip()
+            log.debug("Using MUUID from hostid: %r" % muuid)
     elif (platform_key == 'mac'):
         #this is absurdly baroque
         #/usr/sbin/system_profiler SPHardwareDataType | fgrep 'Serial' | awk '{print $NF}'
