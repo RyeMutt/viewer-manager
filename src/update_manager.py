@@ -326,7 +326,7 @@ def make_VVM_UUID_hash(platform_key):
     if muuid is None:
         #fake it
         log.info("Unable to get system unique id; constructing a dummy")
-        muuid = str(uuid.uuid1())
+        muuid = hashlib.md5(uuid.getnode().to_bytes(6)).hexdigest()
     # hashlib requires a bytes object, not a str
     hash = hashlib.md5(muuid.encode('utf8')).hexdigest()
     return hash
