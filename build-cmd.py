@@ -152,6 +152,10 @@ def pyinstaller(mainfile, dstdir, icon, manifest_from_build=None):
     # PyInstaller, use the one in this directory.
     command.append('--additional-hooks-dir=' + os.path.dirname(__file__))
 
+    if system() == 'Darwin':
+        command.append('--target-architecture')
+        command.append('universal2')
+
     # https://pyinstaller.readthedocs.io/en/stable/usage.html#running-pyinstaller-from-python-code
     import PyInstaller.__main__
     print_command(PyInstaller.__main__.__file__, *command)
