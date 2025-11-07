@@ -1,3 +1,4 @@
+import sys
 try:
     import cgitb
 except ImportError:
@@ -24,7 +25,6 @@ from pathlib import Path
 import platform
 from io import StringIO
 import subprocess
-import sys
 import tempfile
 import time
 
